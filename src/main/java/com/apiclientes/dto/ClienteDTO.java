@@ -23,7 +23,7 @@ public class ClienteDTO {
 
     private LocalDate dataCadastro;
 
-    public ClienteDTO(Cliente cliente){
+    public ClienteDTO(Cliente cliente) {
         this.nome = cliente.getNome();
         this.cpf = cliente.getCpf();
     }

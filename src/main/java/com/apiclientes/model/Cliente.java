@@ -15,19 +15,19 @@ import java.time.LocalDate;
 public class Cliente {
 
     @Id
-    @GeneratedValue(strategy =  GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, length = 150)
     private String nome;
 
-    @Column(nullable = false, length = 11)
+    @Column
     private String cpf;
 
     @Column
     private LocalDate dataCadastro;
 
-    public Cliente(ClienteDTO clienteDTO){
+    public Cliente(ClienteDTO clienteDTO) {
         this.nome = clienteDTO.getNome();
         this.cpf = clienteDTO.getCpf();
     }
