@@ -1,7 +1,10 @@
 package com.apiclientes.service.impl;
 
 import com.apiclientes.dto.ClienteDTO;
+import com.apiclientes.feign.model.Cep;
+import com.apiclientes.feign.service.CepService;
 import com.apiclientes.model.Cliente;
+import com.apiclientes.model.Endereco;
 import com.apiclientes.repository.ClienteRepository;
 import com.apiclientes.service.ClienteService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +23,8 @@ public class ClienteServiceImpl implements ClienteService {
 
     private final ClienteRepository clienteRepository;
 
+    private final CepService cepService;
+
     @Override
     public Cliente salvar(ClienteDTO clienteDTO) {
 
@@ -34,6 +39,19 @@ public class ClienteServiceImpl implements ClienteService {
         }
 
         cliente.setDataCadastro(LocalDate.now());
+
+        Cep cep = this.cepService.getEnderecoPorCep(clienteDTO.getEndereco().getCep());
+
+        Endereco endereco = new Endereco();
+        endereco.setRua(cep.getLogradouro());
+        endereco.setBairro(cep.getBairro());
+        endereco.setCep(cep.getCep());
+        endereco.setCidade(cep.getLocalidade());
+        endereco.setComplemento(cep.getComplemento());
+        endereco.setEstado(cep.getUf());
+        endereco.setNumero(clienteDTO.getEndereco().getNumero());
+
+        cliente.setEndereco(endereco);
 
         return this.clienteRepository.save(cliente);
     }
@@ -65,6 +83,7 @@ public class ClienteServiceImpl implements ClienteService {
 
         ClienteDTO clienteDTO = new ClienteDTO(clienteId.get());
         clienteDTO.setDataCadastro(clienteId.get().getDataCadastro());
+        clienteDTO.setEndereco(clienteId.get().getEndereco());
 
         return Optional.of(clienteDTO);
     }
@@ -85,6 +104,7 @@ public class ClienteServiceImpl implements ClienteService {
         cliente.setId(id);
         cliente.setCpf(clienteId.get().getCpf());
         cliente.setDataCadastro(clienteId.get().getDataCadastro());
+        cliente.setEndereco(clienteId.get().getEndereco());
 
         return this.clienteRepository.save(cliente);
     }

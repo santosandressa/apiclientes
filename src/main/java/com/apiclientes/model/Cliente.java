@@ -24,6 +24,9 @@ public class Cliente {
     @Column
     private String cpf;
 
+    @Embedded
+    private Endereco endereco;
+
     @Column
     private LocalDate dataCadastro;
 
