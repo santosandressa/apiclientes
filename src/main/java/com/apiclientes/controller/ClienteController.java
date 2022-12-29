@@ -4,12 +4,13 @@ import com.apiclientes.dto.ClienteDTO;
 import com.apiclientes.model.Cliente;
 import com.apiclientes.service.ClienteService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -21,19 +22,19 @@ public class ClienteController {
     private final ClienteService clienteService;
 
     @PostMapping
-    public ResponseEntity<Void> salvar(@Valid @RequestBody ClienteDTO clienteDTO) {
-        this.clienteService.salvar(clienteDTO);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<String> salvarCliente(@Valid @RequestBody ClienteDTO clienteDTO) {
+        try {
+            this.clienteService.salvar(clienteDTO);
+            return new ResponseEntity<>("Cliente criado com sucesso", HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Erro ao criar cliente: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Optional<List<Cliente>>> buscarTodos() {
+    public ResponseEntity<Page<Cliente>> buscarTodos(Pageable pageable) {
 
-        Optional<List<Cliente>> clientes = this.clienteService.buscarTodos();
-
-        if (clientes.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
+        Page<Cliente> clientes = this.clienteService.buscarTodos(pageable);
 
         return new ResponseEntity<>(clientes, HttpStatus.OK);
     }
@@ -43,16 +44,23 @@ public class ClienteController {
 
         Optional<ClienteDTO> cliente = this.clienteService.buscarPorId(id);
 
-        if (cliente.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        if (cliente.isPresent()) {
+            return new ResponseEntity<>(cliente, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        return new ResponseEntity<>(cliente, HttpStatus.OK);
     }
 
     @PutMapping("/atualizar/{id}")
     public ResponseEntity<Void> atualizar(@RequestBody ClienteDTO clienteDTO, @PathVariable Long id) {
-        this.clienteService.atualizar(clienteDTO, id);
+
+        ClienteDTO updatedClienteDTO = this.clienteService.atualizar(clienteDTO, id);
+
+        if (updatedClienteDTO == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -61,4 +69,5 @@ public class ClienteController {
         this.clienteService.deletar(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
 }
